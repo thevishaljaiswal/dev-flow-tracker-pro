@@ -22,6 +22,17 @@ import {
   ArrowLeft,
   Save
 } from "lucide-react";
+import { DocumentAttachment } from "./DocumentAttachment";
+
+interface Document {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  uploadedBy: string;
+  uploadedDate: string;
+  url?: string;
+}
 
 interface RequestDetailsProps {
   request: DevelopmentRequest;
@@ -37,6 +48,9 @@ export const RequestDetails = ({ request, onUpdate, onBack }: RequestDetailsProp
   const [testingBugs, setTestingBugs] = useState<any[]>([]);
   const [uatIssues, setUatIssues] = useState<any[]>([]);
   const [postDeploymentIssues, setPostDeploymentIssues] = useState<any[]>([]);
+
+  // Document state
+  const [requirementDocuments, setRequirementDocuments] = useState<Document[]>([]);
 
   const phases = [
     { id: "requirement-gathering", label: "Requirement Gathering", icon: FileText },
@@ -146,89 +160,99 @@ export const RequestDetails = ({ request, onUpdate, onBack }: RequestDetailsProp
           ))}
         </TabsList>
 
-        {/* Phase 1: Requirement Gathering */}
+        {/* Phase 1: Requirement Gathering - Enhanced with Document Attachment */}
         <TabsContent value="requirement-gathering">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center space-x-2">
-                  <FileText className="w-5 h-5" />
-                  <span>Requirement Gathering</span>
-                </CardTitle>
-                <p className="text-sm text-slate-600">Initial request information</p>
-              </div>
-              {editingPhase !== "requirement-gathering" && (
-                <Button
-                  variant="outline"
-                  onClick={() => setEditingPhase("requirement-gathering")}
-                >
-                  Edit
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {editingPhase === "requirement-gathering" ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center space-x-2">
+                    <FileText className="w-5 h-5" />
+                    <span>Requirement Gathering</span>
+                  </CardTitle>
+                  <p className="text-sm text-slate-600">Initial request information</p>
+                </div>
+                {editingPhase !== "requirement-gathering" && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setEditingPhase("requirement-gathering")}
+                  >
+                    Edit
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {editingPhase === "requirement-gathering" ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Title / Summary</Label>
+                        <Input
+                          value={formData.title}
+                          onChange={(e) => handleFieldChange("title", e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Priority</Label>
+                        <Select 
+                          value={formData.priority} 
+                          onValueChange={(value) => handleFieldChange("priority", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Low">Low</SelectItem>
+                            <SelectItem value="Medium">Medium</SelectItem>
+                            <SelectItem value="High">High</SelectItem>
+                            <SelectItem value="Urgent">Urgent</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                     <div className="space-y-2">
-                      <Label>Title / Summary</Label>
-                      <Input
-                        value={formData.title}
-                        onChange={(e) => handleFieldChange("title", e.target.value)}
+                      <Label>Business Justification</Label>
+                      <Textarea
+                        value={formData.businessJustification}
+                        onChange={(e) => handleFieldChange("businessJustification", e.target.value)}
+                        rows={3}
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label>Priority</Label>
-                      <Select 
-                        value={formData.priority} 
-                        onValueChange={(value) => handleFieldChange("priority", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Low">Low</SelectItem>
-                          <SelectItem value="Medium">Medium</SelectItem>
-                          <SelectItem value="High">High</SelectItem>
-                          <SelectItem value="Urgent">Urgent</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="flex space-x-2">
+                      <Button onClick={() => handleSave("requirement-gathering")}>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Changes
+                      </Button>
+                      <Button variant="outline" onClick={() => setEditingPhase(null)}>
+                        Cancel
+                      </Button>
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label>Business Justification</Label>
-                    <Textarea
-                      value={formData.businessJustification}
-                      onChange={(e) => handleFieldChange("businessJustification", e.target.value)}
-                      rows={3}
-                    />
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div><strong>Requested By:</strong> {request.requestedBy}</div>
+                      <div><strong>Department:</strong> {request.department}</div>
+                      <div><strong>Related Module:</strong> {request.relatedModule}</div>
+                      <div><strong>Request Date:</strong> {new Date(request.requestDate).toLocaleDateString()}</div>
+                    </div>
+                    <div>
+                      <strong>Business Justification:</strong>
+                      <p className="mt-1 text-slate-700">{request.businessJustification}</p>
+                    </div>
                   </div>
-                  <div className="flex space-x-2">
-                    <Button onClick={() => handleSave("requirement-gathering")}>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Changes
-                    </Button>
-                    <Button variant="outline" onClick={() => setEditingPhase(null)}>
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><strong>Requested By:</strong> {request.requestedBy}</div>
-                    <div><strong>Department:</strong> {request.department}</div>
-                    <div><strong>Related Module:</strong> {request.relatedModule}</div>
-                    <div><strong>Request Date:</strong> {new Date(request.requestDate).toLocaleDateString()}</div>
-                  </div>
-                  <div>
-                    <strong>Business Justification:</strong>
-                    <p className="mt-1 text-slate-700">{request.businessJustification}</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Document Attachment for Requirement Gathering */}
+            <DocumentAttachment
+              title="Requirement Documents"
+              documents={requirementDocuments}
+              onUpdate={setRequirementDocuments}
+              allowUpload={true}
+            />
+          </div>
         </TabsContent>
 
         {/* Phase 2: Analysis */}
