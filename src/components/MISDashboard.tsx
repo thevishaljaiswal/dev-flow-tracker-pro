@@ -22,14 +22,8 @@ interface MISDashboardProps {
 export const MISDashboard = ({ requests, onNavigateToRequests }: MISDashboardProps) => {
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
-    
-    // If current month is April or later, use current year, otherwise use previous year
-    const year = currentMonth >= 3 ? currentYear : currentYear - 1;
-    // Default to current month if it's between April-March cycle, otherwise April
-    const month = currentMonth >= 3 ? currentMonth : 3;
-    
+    const year = now.getFullYear();
+    const month = now.getMonth();
     return `${year}-${String(month).padStart(2, '0')}`;
   });
 
@@ -38,14 +32,12 @@ export const MISDashboard = ({ requests, onNavigateToRequests }: MISDashboardPro
     const now = new Date();
     const currentYear = now.getFullYear();
     
-    // Generate months from April of current year to March of next year
-    for (let i = 0; i < 12; i++) {
-      // Start from April (month 3 in 0-based indexing)
-      const monthIndex = (3 + i) % 12; // April=3, May=4, ..., Dec=11, Jan=0, Feb=1, Mar=2
-      const year = monthIndex >= 3 ? currentYear : currentYear + 1; // Next year for Jan, Feb, Mar
-      
-      const date = new Date(year, monthIndex, 1);
-      const value = `${year}-${String(monthIndex).padStart(2, '0')}`;
+    // Generate last 12 months
+    for (let i = 11; i >= 0; i--) {
+      const date = new Date(currentYear, now.getMonth() - i, 1);
+      const year = date.getFullYear();
+      const month = date.getMonth();
+      const value = `${year}-${String(month).padStart(2, '0')}`;
       const label = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
       months.push({ value, label });
     }
@@ -55,12 +47,10 @@ export const MISDashboard = ({ requests, onNavigateToRequests }: MISDashboardPro
 
   const getSelectedMonthData = () => {
     const [year, month] = selectedMonth.split('-').map(Number);
-    const startDate = new Date(year, month, 1);
-    const endDate = new Date(year, month + 1, 0); // Last day of the month
-
+    
     return requests.filter(req => {
       const reqDate = new Date(req.requestDate);
-      return reqDate >= startDate && reqDate <= endDate;
+      return reqDate.getFullYear() === year && reqDate.getMonth() === month;
     });
   };
 
@@ -117,6 +107,7 @@ export const MISDashboard = ({ requests, onNavigateToRequests }: MISDashboardPro
   };
 
   const isSelectedMonth = (dateString: string) => {
+    if (!dateString) return false;
     const date = new Date(dateString);
     const [year, month] = selectedMonth.split('-').map(Number);
     return date.getFullYear() === year && date.getMonth() === month;
@@ -154,7 +145,7 @@ export const MISDashboard = ({ requests, onNavigateToRequests }: MISDashboardPro
       approvedRequests: selectedMonthRequests.filter(r => r.approvalStatus === "Approved").length,
       inDevelopment: selectedMonthRequests.filter(r => r.currentStage === "development").length,
       inTesting: selectedMonthRequests.filter(r => ["testing", "uat"].includes(r.currentStage)).length,
-      deployed: selectedMonthRequests.filter(r => r.deploymentDate).length
+      deployed: selectedMonthRequests.filter(r => r.deploymentDate && isSelectedMonth(r.deploymentDate)).length
     };
     return stats;
   };
@@ -181,6 +172,10 @@ export const MISDashboard = ({ requests, onNavigateToRequests }: MISDashboardPro
       onNavigateToRequests();
     }
   };
+
+  console.log('Selected month:', selectedMonth);
+  console.log('Selected month requests:', selectedMonthRequests);
+  console.log('Monthly stats:', monthlyStats);
 
   return (
     <div className="space-y-6">
@@ -366,51 +361,50 @@ export const MISDashboard = ({ requests, onNavigateToRequests }: MISDashboardPro
       {/* Project Activities Detail */}
       <Card>
         <CardHeader>
-          <CardTitle>Project Activities - {selectedMonthLabel}</CardTitle>
+          <CardTitle>Recent Requests - {selectedMonthLabel}</CardTitle>
         </CardHeader>
         <CardContent>
-          {projectActivities.length > 0 ? (
+          {selectedMonthRequests.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Request ID</TableHead>
-                  <TableHead>Project Title</TableHead>
+                  <TableHead>Title</TableHead>
                   <TableHead>Department</TableHead>
-                  <TableHead>Phase</TableHead>
-                  <TableHead>Activity</TableHead>
+                  <TableHead>Priority</TableHead>
+                  <TableHead>Stage</TableHead>
                   <TableHead>Date</TableHead>
-                  <TableHead>Status</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {projectActivities.map((project) =>
-                  project.activities.map((activity, index) => (
-                    <TableRow key={`${project.requestId}-${index}`}>
-                      <TableCell className="font-mono">{project.requestId}</TableCell>
-                      <TableCell className="font-medium">{project.title}</TableCell>
-                      <TableCell>{project.department}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline">{activity.phase}</Badge>
-                      </TableCell>
-                      <TableCell>{activity.action}</TableCell>
-                      <TableCell>{new Date(activity.date).toLocaleDateString()}</TableCell>
-                      <TableCell>
-                        <Badge className={`${
-                          activity.status === "Completed" ? "bg-green-500" :
-                          activity.status === "Current" ? "bg-blue-500" :
-                          "bg-gray-500"
-                        } text-white`}>
-                          {activity.status}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
+                {selectedMonthRequests.map((request) => (
+                  <TableRow key={request.id}>
+                    <TableCell className="font-mono">{request.id}</TableCell>
+                    <TableCell className="font-medium">{request.title}</TableCell>
+                    <TableCell>{request.department}</TableCell>
+                    <TableCell>
+                      <Badge className={`${
+                        request.priority === "Urgent" ? "bg-red-500" :
+                        request.priority === "High" ? "bg-orange-500" :
+                        request.priority === "Medium" ? "bg-yellow-500" :
+                        "bg-green-500"
+                      } text-white`}>
+                        {request.priority}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">
+                        {request.currentStage.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{new Date(request.requestDate).toLocaleDateString()}</TableCell>
+                  </TableRow>
+                ))}
               </TableBody>
             </Table>
           ) : (
             <div className="text-center py-8 text-slate-500">
-              No project activities recorded for {selectedMonthLabel}
+              No requests found for {selectedMonthLabel}
             </div>
           )}
         </CardContent>
