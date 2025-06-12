@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -98,7 +99,7 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
 
       if (projectActivities.length > 0) {
         activities.push({
-          requestId: req.requestId,
+          requestId: req.id,
           title: req.title,
           department: req.department,
           activities: projectActivities
