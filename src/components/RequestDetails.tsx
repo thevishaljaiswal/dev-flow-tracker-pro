@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
 import { DevelopmentRequest } from "../pages/Index";
+import { BugTaskTracker } from "./BugTaskTracker";
 import { toast } from "sonner";
 import { 
   FileText, 
@@ -32,6 +32,11 @@ interface RequestDetailsProps {
 export const RequestDetails = ({ request, onUpdate, onBack }: RequestDetailsProps) => {
   const [editingPhase, setEditingPhase] = useState<string | null>(null);
   const [formData, setFormData] = useState<DevelopmentRequest>(request);
+
+  // Bug/Task tracking state
+  const [testingBugs, setTestingBugs] = useState<any[]>([]);
+  const [uatIssues, setUatIssues] = useState<any[]>([]);
+  const [postDeploymentIssues, setPostDeploymentIssues] = useState<any[]>([]);
 
   const phases = [
     { id: "requirement-gathering", label: "Requirement Gathering", icon: FileText },
@@ -531,215 +536,235 @@ export const RequestDetails = ({ request, onUpdate, onBack }: RequestDetailsProp
           </Card>
         </TabsContent>
 
-        {/* Phase 5: Testing */}
+        {/* Phase 5: Testing - Enhanced with Bug Tracker */}
         <TabsContent value="testing">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center space-x-2">
-                  <CheckCircle className="w-5 h-5" />
-                  <span>Testing Phase</span>
-                </CardTitle>
-                <p className="text-sm text-slate-600">Quality assurance and testing</p>
-              </div>
-              {editingPhase !== "testing" && (
-                <Button variant="outline" onClick={() => setEditingPhase("testing")}>
-                  Edit
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {editingPhase === "testing" ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Test Case Reference</Label>
-                      <Input
-                        value={formData.testCaseReference || ""}
-                        onChange={(e) => handleFieldChange("testCaseReference", e.target.value)}
-                        placeholder="Test case ID or reference"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Test Status</Label>
-                      <Select 
-                        value={formData.testStatus || ""} 
-                        onValueChange={(value) => handleFieldChange("testStatus", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select test status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Pass">Pass</SelectItem>
-                          <SelectItem value="Fail">Fail</SelectItem>
-                          <SelectItem value="Pending">Pending</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Test Start Date</Label>
-                      <Input
-                        type="date"
-                        value={formData.testStartDate || ""}
-                        onChange={(e) => handleFieldChange("testStartDate", e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Test Completion Date</Label>
-                      <Input
-                        type="date"
-                        value={formData.testCompletionDate || ""}
-                        onChange={(e) => handleFieldChange("testCompletionDate", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Bugs Reported</Label>
-                    <Textarea
-                      value={formData.bugsReported || ""}
-                      onChange={(e) => handleFieldChange("bugsReported", e.target.value)}
-                      rows={3}
-                      placeholder="List of bugs found during testing..."
-                    />
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Checkbox
-                      id="reworkNeeded"
-                      checked={formData.reworkNeeded || false}
-                      onCheckedChange={(checked) => handleFieldChange("reworkNeeded", checked)}
-                    />
-                    <Label htmlFor="reworkNeeded">Rework Needed</Label>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button onClick={() => handleSave("testing")}>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Testing
-                    </Button>
-                    <Button variant="outline" onClick={() => setEditingPhase(null)}>
-                      Cancel
-                    </Button>
-                  </div>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center space-x-2">
+                    <CheckCircle className="w-5 h-5" />
+                    <span>Testing Phase</span>
+                  </CardTitle>
+                  <p className="text-sm text-slate-600">Quality assurance and testing</p>
                 </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div><strong>Test Case Reference:</strong> {request.testCaseReference || "Not specified"}</div>
+                {editingPhase !== "testing" && (
+                  <Button variant="outline" onClick={() => setEditingPhase("testing")}>
+                    Edit
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {editingPhase === "testing" ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Test Case Reference</Label>
+                        <Input
+                          value={formData.testCaseReference || ""}
+                          onChange={(e) => handleFieldChange("testCaseReference", e.target.value)}
+                          placeholder="Test case ID or reference"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Test Status</Label>
+                        <Select 
+                          value={formData.testStatus || ""} 
+                          onValueChange={(value) => handleFieldChange("testStatus", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select test status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Pass">Pass</SelectItem>
+                            <SelectItem value="Fail">Fail</SelectItem>
+                            <SelectItem value="Pending">Pending</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Test Start Date</Label>
+                        <Input
+                          type="date"
+                          value={formData.testStartDate || ""}
+                          onChange={(e) => handleFieldChange("testStartDate", e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Test Completion Date</Label>
+                        <Input
+                          type="date"
+                          value={formData.testCompletionDate || ""}
+                          onChange={(e) => handleFieldChange("testCompletionDate", e.target.value)}
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Bugs Reported</Label>
+                      <Textarea
+                        value={formData.bugsReported || ""}
+                        onChange={(e) => handleFieldChange("bugsReported", e.target.value)}
+                        rows={3}
+                        placeholder="List of bugs found during testing..."
+                      />
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Checkbox
+                        id="reworkNeeded"
+                        checked={formData.reworkNeeded || false}
+                        onCheckedChange={(checked) => handleFieldChange("reworkNeeded", checked)}
+                      />
+                      <Label htmlFor="reworkNeeded">Rework Needed</Label>
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button onClick={() => handleSave("testing")}>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Testing
+                      </Button>
+                      <Button variant="outline" onClick={() => setEditingPhase(null)}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div><strong>Test Case Reference:</strong> {request.testCaseReference || "Not specified"}</div>
+                      <div>
+                        <strong>Test Status:</strong> 
+                        <Badge className={`ml-2 ${
+                          request.testStatus === "Pass" ? "bg-green-500" :
+                          request.testStatus === "Fail" ? "bg-red-500" :
+                          "bg-yellow-500"
+                        } text-white`}>
+                          {request.testStatus || "Pending"}
+                        </Badge>
+                      </div>
+                      <div><strong>Test Start Date:</strong> {request.testStartDate ? new Date(request.testStartDate).toLocaleDateString() : "Not set"}</div>
+                      <div><strong>Test Completion:</strong> {request.testCompletionDate ? new Date(request.testCompletionDate).toLocaleDateString() : "Not set"}</div>
+                      <div><strong>Rework Needed:</strong> {request.reworkNeeded ? "Yes" : "No"}</div>
+                    </div>
                     <div>
-                      <strong>Test Status:</strong> 
-                      <Badge className={`ml-2 ${
-                        request.testStatus === "Pass" ? "bg-green-500" :
-                        request.testStatus === "Fail" ? "bg-red-500" :
-                        "bg-yellow-500"
-                      } text-white`}>
-                        {request.testStatus || "Pending"}
-                      </Badge>
+                      <strong>Bugs Reported:</strong>
+                      <p className="mt-1 text-slate-700">{request.bugsReported || "No bugs reported"}</p>
                     </div>
-                    <div><strong>Test Start Date:</strong> {request.testStartDate ? new Date(request.testStartDate).toLocaleDateString() : "Not set"}</div>
-                    <div><strong>Test Completion:</strong> {request.testCompletionDate ? new Date(request.testCompletionDate).toLocaleDateString() : "Not set"}</div>
-                    <div><strong>Rework Needed:</strong> {request.reworkNeeded ? "Yes" : "No"}</div>
                   </div>
-                  <div>
-                    <strong>Bugs Reported:</strong>
-                    <p className="mt-1 text-slate-700">{request.bugsReported || "No bugs reported"}</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Bug & Task Tracker for Testing */}
+            <BugTaskTracker 
+              phase="Testing"
+              requestId={request.id}
+              items={testingBugs}
+              onUpdate={setTestingBugs}
+            />
+          </div>
         </TabsContent>
 
-        {/* Phase 6: UAT */}
+        {/* Phase 6: UAT - Enhanced with Issue Tracker */}
         <TabsContent value="uat">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center space-x-2">
-                  <Calendar className="w-5 h-5" />
-                  <span>User Acceptance Testing</span>
-                </CardTitle>
-                <p className="text-sm text-slate-600">Business user validation and acceptance</p>
-              </div>
-              {editingPhase !== "uat" && (
-                <Button variant="outline" onClick={() => setEditingPhase("uat")}>
-                  Edit
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {editingPhase === "uat" ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>UAT Status</Label>
-                      <Select 
-                        value={formData.uatStatus || ""} 
-                        onValueChange={(value) => handleFieldChange("uatStatus", value)}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select UAT status" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Accepted">Accepted</SelectItem>
-                          <SelectItem value="Rejected">Rejected</SelectItem>
-                          <SelectItem value="Changes Required">Changes Required</SelectItem>
-                          <SelectItem value="Pending">Pending</SelectItem>
-                        </SelectContent>
-                      </Select>
+          <div className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Calendar className="w-5 h-5" />
+                    <span>User Acceptance Testing</span>
+                  </CardTitle>
+                  <p className="text-sm text-slate-600">Business user validation and acceptance</p>
+                </div>
+                {editingPhase !== "uat" && (
+                  <Button variant="outline" onClick={() => setEditingPhase("uat")}>
+                    Edit
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {editingPhase === "uat" ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>UAT Status</Label>
+                        <Select 
+                          value={formData.uatStatus || ""} 
+                          onValueChange={(value) => handleFieldChange("uatStatus", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select UAT status" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Accepted">Accepted</SelectItem>
+                            <SelectItem value="Rejected">Rejected</SelectItem>
+                            <SelectItem value="Changes Required">Changes Required</SelectItem>
+                            <SelectItem value="Pending">Pending</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>UAT Completion Date</Label>
+                        <Input
+                          type="date"
+                          value={formData.uatCompletionDate || ""}
+                          onChange={(e) => handleFieldChange("uatCompletionDate", e.target.value)}
+                        />
+                      </div>
                     </div>
                     <div className="space-y-2">
-                      <Label>UAT Completion Date</Label>
-                      <Input
-                        type="date"
-                        value={formData.uatCompletionDate || ""}
-                        onChange={(e) => handleFieldChange("uatCompletionDate", e.target.value)}
+                      <Label>UAT Feedback</Label>
+                      <Textarea
+                        value={formData.uatFeedback || ""}
+                        onChange={(e) => handleFieldChange("uatFeedback", e.target.value)}
+                        rows={4}
+                        placeholder="Business user feedback and comments..."
                       />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>UAT Feedback</Label>
-                    <Textarea
-                      value={formData.uatFeedback || ""}
-                      onChange={(e) => handleFieldChange("uatFeedback", e.target.value)}
-                      rows={4}
-                      placeholder="Business user feedback and comments..."
-                    />
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button onClick={() => handleSave("uat")}>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save UAT
-                    </Button>
-                    <Button variant="outline" onClick={() => setEditingPhase(null)}>
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <strong>UAT Status:</strong> 
-                      <Badge className={`ml-2 ${
-                        request.uatStatus === "Accepted" ? "bg-green-500" :
-                        request.uatStatus === "Rejected" ? "bg-red-500" :
-                        request.uatStatus === "Changes Required" ? "bg-yellow-500" :
-                        "bg-gray-500"
-                      } text-white`}>
-                        {request.uatStatus || "Pending"}
-                      </Badge>
+                    <div className="flex space-x-2">
+                      <Button onClick={() => handleSave("uat")}>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save UAT
+                      </Button>
+                      <Button variant="outline" onClick={() => setEditingPhase(null)}>
+                        Cancel
+                      </Button>
                     </div>
-                    <div><strong>UAT Completion Date:</strong> {request.uatCompletionDate ? new Date(request.uatCompletionDate).toLocaleDateString() : "Not set"}</div>
                   </div>
-                  <div>
-                    <strong>UAT Feedback:</strong>
-                    <p className="mt-1 text-slate-700">{request.uatFeedback || "No feedback provided"}</p>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <strong>UAT Status:</strong> 
+                        <Badge className={`ml-2 ${
+                          request.uatStatus === "Accepted" ? "bg-green-500" :
+                          request.uatStatus === "Rejected" ? "bg-red-500" :
+                          request.uatStatus === "Changes Required" ? "bg-yellow-500" :
+                          "bg-gray-500"
+                        } text-white`}>
+                          {request.uatStatus || "Pending"}
+                        </Badge>
+                      </div>
+                      <div><strong>UAT Completion Date:</strong> {request.uatCompletionDate ? new Date(request.uatCompletionDate).toLocaleDateString() : "Not set"}</div>
+                    </div>
+                    <div>
+                      <strong>UAT Feedback:</strong>
+                      <p className="mt-1 text-slate-700">{request.uatFeedback || "No feedback provided"}</p>
+                    </div>
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Issue Tracker for UAT */}
+            <BugTaskTracker 
+              phase="UAT"
+              requestId={request.id}
+              items={uatIssues}
+              onUpdate={setUatIssues}
+            />
+          </div>
         </TabsContent>
 
         {/* Phase 7: Deployment */}
@@ -847,130 +872,140 @@ export const RequestDetails = ({ request, onUpdate, onBack }: RequestDetailsProp
           </Card>
         </TabsContent>
 
-        {/* Phase 8: Post-Deployment */}
+        {/* Phase 8: Post-Deployment - Enhanced with Issue Tracker */}
         <TabsContent value="completed">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="flex items-center space-x-2">
-                  <CheckCircle className="w-5 h-5" />
-                  <span>Post-Deployment Review</span>
-                </CardTitle>
-                <p className="text-sm text-slate-600">Final review and project closure</p>
-              </div>
-              {editingPhase !== "completed" && (
-                <Button variant="outline" onClick={() => setEditingPhase("completed")}>
-                  Edit
-                </Button>
-              )}
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {editingPhase === "completed" ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="flex items-center space-x-2">
+                    <CheckCircle className="w-5 h-5" />
+                    <span>Post-Deployment Review</span>
+                  </CardTitle>
+                  <p className="text-sm text-slate-600">Final review and project closure</p>
+                </div>
+                {editingPhase !== "completed" && (
+                  <Button variant="outline" onClick={() => setEditingPhase("completed")}>
+                    Edit
+                  </Button>
+                )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {editingPhase === "completed" ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label>Outcome</Label>
+                        <Select 
+                          value={formData.outcome || ""} 
+                          onValueChange={(value) => handleFieldChange("outcome", value)}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select outcome" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Successful">Successful</SelectItem>
+                            <SelectItem value="Issues Found">Issues Found</SelectItem>
+                            <SelectItem value="Pending">Pending</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Close Date</Label>
+                        <Input
+                          type="date"
+                          value={formData.closeDate || ""}
+                          onChange={(e) => handleFieldChange("closeDate", e.target.value)}
+                        />
+                      </div>
+                    </div>
                     <div className="space-y-2">
-                      <Label>Outcome</Label>
+                      <Label>Final Status</Label>
                       <Select 
-                        value={formData.outcome || ""} 
-                        onValueChange={(value) => handleFieldChange("outcome", value)}
+                        value={formData.finalStatus || ""} 
+                        onValueChange={(value) => handleFieldChange("finalStatus", value)}
                       >
                         <SelectTrigger>
-                          <SelectValue placeholder="Select outcome" />
+                          <SelectValue placeholder="Select final status" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="Successful">Successful</SelectItem>
-                          <SelectItem value="Issues Found">Issues Found</SelectItem>
-                          <SelectItem value="Pending">Pending</SelectItem>
+                          <SelectItem value="Closed">Closed</SelectItem>
+                          <SelectItem value="Pending Rework">Pending Rework</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Close Date</Label>
-                      <Input
-                        type="date"
-                        value={formData.closeDate || ""}
-                        onChange={(e) => handleFieldChange("closeDate", e.target.value)}
+                      <Label>Issues (if any)</Label>
+                      <Textarea
+                        value={formData.issues || ""}
+                        onChange={(e) => handleFieldChange("issues", e.target.value)}
+                        rows={3}
+                        placeholder="Post-deployment issues found..."
                       />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Final Status</Label>
-                    <Select 
-                      value={formData.finalStatus || ""} 
-                      onValueChange={(value) => handleFieldChange("finalStatus", value)}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select final status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Closed">Closed</SelectItem>
-                        <SelectItem value="Pending Rework">Pending Rework</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Issues (if any)</Label>
-                    <Textarea
-                      value={formData.issues || ""}
-                      onChange={(e) => handleFieldChange("issues", e.target.value)}
-                      rows={3}
-                      placeholder="Post-deployment issues found..."
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Lessons Learned</Label>
-                    <Textarea
-                      value={formData.lessonsLearned || ""}
-                      onChange={(e) => handleFieldChange("lessonsLearned", e.target.value)}
-                      rows={3}
-                      placeholder="Key learnings from this project..."
-                    />
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button onClick={() => handleSave("completed")}>
-                      <Save className="w-4 h-4 mr-2" />
-                      Save Review
-                    </Button>
-                    <Button variant="outline" onClick={() => setEditingPhase(null)}>
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <strong>Outcome:</strong> 
-                      <Badge className={`ml-2 ${
-                        request.outcome === "Successful" ? "bg-green-500" :
-                        request.outcome === "Issues Found" ? "bg-red-500" :
-                        "bg-yellow-500"
-                      } text-white`}>
-                        {request.outcome || "Pending"}
-                      </Badge>
+                    <div className="space-y-2">
+                      <Label>Lessons Learned</Label>
+                      <Textarea
+                        value={formData.lessonsLearned || ""}
+                        onChange={(e) => handleFieldChange("lessonsLearned", e.target.value)}
+                        rows={3}
+                        placeholder="Key learnings from this project..."
+                      />
                     </div>
-                    <div><strong>Close Date:</strong> {request.closeDate ? new Date(request.closeDate).toLocaleDateString() : "Not closed"}</div>
-                    <div>
-                      <strong>Final Status:</strong> 
-                      <Badge className={`ml-2 ${
-                        request.finalStatus === "Closed" ? "bg-green-500" : "bg-yellow-500"
-                      } text-white`}>
-                        {request.finalStatus || "Open"}
-                      </Badge>
+                    <div className="flex space-x-2">
+                      <Button onClick={() => handleSave("completed")}>
+                        <Save className="w-4 h-4 mr-2" />
+                        Save Review
+                      </Button>
+                      <Button variant="outline" onClick={() => setEditingPhase(null)}>
+                        Cancel
+                      </Button>
                     </div>
                   </div>
-                  <div>
-                    <strong>Issues:</strong>
-                    <p className="mt-1 text-slate-700">{request.issues || "No issues reported"}</p>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <strong>Outcome:</strong> 
+                        <Badge className={`ml-2 ${
+                          request.outcome === "Successful" ? "bg-green-500" :
+                          request.outcome === "Issues Found" ? "bg-red-500" :
+                          "bg-yellow-500"
+                        } text-white`}>
+                          {request.outcome || "Pending"}
+                        </Badge>
+                      </div>
+                      <div><strong>Close Date:</strong> {request.closeDate ? new Date(request.closeDate).toLocaleDateString() : "Not closed"}</div>
+                      <div>
+                        <strong>Final Status:</strong> 
+                        <Badge className={`ml-2 ${
+                          request.finalStatus === "Closed" ? "bg-green-500" : "bg-yellow-500"
+                        } text-white`}>
+                          {request.finalStatus || "Open"}
+                        </Badge>
+                      </div>
+                    </div>
+                    <div>
+                      <strong>Issues:</strong>
+                      <p className="mt-1 text-slate-700">{request.issues || "No issues reported"}</p>
+                    </div>
+                    <div>
+                      <strong>Lessons Learned:</strong>
+                      <p className="mt-1 text-slate-700">{request.lessonsLearned || "No lessons documented"}</p>
+                    </div>
                   </div>
-                  <div>
-                    <strong>Lessons Learned:</strong>
-                    <p className="mt-1 text-slate-700">{request.lessonsLearned || "No lessons documented"}</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Issue Tracker for Post-Deployment */}
+            <BugTaskTracker 
+              phase="Post-Deployment"
+              requestId={request.id}
+              items={postDeploymentIssues}
+              onUpdate={setPostDeploymentIssues}
+            />
+          </div>
         </TabsContent>
       </Tabs>
     </div>
