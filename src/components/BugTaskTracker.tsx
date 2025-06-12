@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -162,7 +161,7 @@ export const BugTaskTracker = ({ phase, requestId, items, onUpdate }: BugTaskTra
                   <Label>Severity</Label>
                   <Select 
                     value={formData.severity} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, severity: value }))}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, severity: value as "Low" | "Medium" | "High" | "Critical" }))}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -179,7 +178,7 @@ export const BugTaskTracker = ({ phase, requestId, items, onUpdate }: BugTaskTra
                   <Label>Status</Label>
                   <Select 
                     value={formData.status} 
-                    onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
+                    onValueChange={(value) => setFormData(prev => ({ ...prev, status: value as "Open" | "In Progress" | "Resolved" | "Closed" }))}
                   >
                     <SelectTrigger>
                       <SelectValue />
