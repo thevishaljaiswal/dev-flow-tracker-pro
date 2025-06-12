@@ -21,17 +21,24 @@ interface MISDashboardProps {
 export const MISDashboard = ({ requests }: MISDashboardProps) => {
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
-    return `${now.getFullYear()}-${String(now.getMonth()).padStart(2, '0')}`;
+    const currentYear = now.getFullYear();
+    // Default to April of current year
+    return `${currentYear}-03`; // March is month index 3 (April is month 3 in 0-based indexing)
   });
 
   const getMonthOptions = () => {
     const months = [];
     const now = new Date();
+    const currentYear = now.getFullYear();
     
-    // Generate last 12 months
+    // Generate months from April of current year to March of next year
     for (let i = 0; i < 12; i++) {
-      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const value = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, '0')}`;
+      // Start from April (month 3 in 0-based indexing)
+      const monthIndex = (3 + i) % 12; // April=3, May=4, ..., Dec=11, Jan=0, Feb=1, Mar=2
+      const year = monthIndex >= 3 ? currentYear : currentYear + 1; // Next year for Jan, Feb, Mar
+      
+      const date = new Date(year, monthIndex, 1);
+      const value = `${year}-${String(monthIndex).padStart(2, '0')}`;
       const label = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
       months.push({ value, label });
     }
@@ -91,7 +98,7 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
 
       if (projectActivities.length > 0) {
         activities.push({
-          requestId: req.id,
+          requestId: req.requestId,
           title: req.title,
           department: req.department,
           activities: projectActivities
