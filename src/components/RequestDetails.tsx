@@ -347,105 +347,628 @@ export const RequestDetails = ({ request, onUpdate, onBack }: RequestDetailsProp
           </Card>
         </TabsContent>
 
-        {/* Continue with other phases... */}
+        {/* Phase 3: Approval */}
         <TabsContent value="approval">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Check className="w-5 h-5" />
-                <span>Approval Stage</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-slate-600">
-                <Check className="w-12 h-12 mx-auto mb-4 text-slate-400" />
-                <p>Approval phase details can be configured here</p>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center space-x-2">
+                  <Check className="w-5 h-5" />
+                  <span>Approval Stage</span>
+                </CardTitle>
+                <p className="text-sm text-slate-600">Management approval and budget allocation</p>
               </div>
+              {editingPhase !== "approval" && (
+                <Button variant="outline" onClick={() => setEditingPhase("approval")}>
+                  Edit
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {editingPhase === "approval" ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Approval Status</Label>
+                      <Select 
+                        value={formData.approvalStatus || ""} 
+                        onValueChange={(value) => handleFieldChange("approvalStatus", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select approval status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Approved">Approved</SelectItem>
+                          <SelectItem value="Rejected">Rejected</SelectItem>
+                          <SelectItem value="On Hold">On Hold</SelectItem>
+                          <SelectItem value="Pending">Pending</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Approved Date</Label>
+                      <Input
+                        type="date"
+                        value={formData.approvedDate || ""}
+                        onChange={(e) => handleFieldChange("approvedDate", e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Budget Allocation</Label>
+                    <Input
+                      type="number"
+                      value={formData.budgetAllocation || ""}
+                      onChange={(e) => handleFieldChange("budgetAllocation", parseFloat(e.target.value))}
+                      placeholder="Budget amount"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Approver Comments</Label>
+                    <Textarea
+                      value={formData.approverComments || ""}
+                      onChange={(e) => handleFieldChange("approverComments", e.target.value)}
+                      rows={3}
+                      placeholder="Comments from approver..."
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button onClick={() => handleSave("approval")}>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Approval
+                    </Button>
+                    <Button variant="outline" onClick={() => setEditingPhase(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <strong>Approval Status:</strong> 
+                      <Badge className={`ml-2 ${
+                        request.approvalStatus === "Approved" ? "bg-green-500" :
+                        request.approvalStatus === "Rejected" ? "bg-red-500" :
+                        request.approvalStatus === "On Hold" ? "bg-yellow-500" :
+                        "bg-gray-500"
+                      } text-white`}>
+                        {request.approvalStatus || "Pending"}
+                      </Badge>
+                    </div>
+                    <div><strong>Approved Date:</strong> {request.approvedDate ? new Date(request.approvedDate).toLocaleDateString() : "Not set"}</div>
+                    <div><strong>Budget Allocation:</strong> {request.budgetAllocation ? `$${request.budgetAllocation.toLocaleString()}` : "Not allocated"}</div>
+                  </div>
+                  <div>
+                    <strong>Approver Comments:</strong>
+                    <p className="mt-1 text-slate-700">{request.approverComments || "No comments provided"}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
+        {/* Phase 4: Development */}
         <TabsContent value="development">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Folder className="w-5 h-5" />
-                <span>Development Phase</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-slate-600">
-                <Folder className="w-12 h-12 mx-auto mb-4 text-slate-400" />
-                <p>Development tracking details can be configured here</p>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center space-x-2">
+                  <Folder className="w-5 h-5" />
+                  <span>Development Phase</span>
+                </CardTitle>
+                <p className="text-sm text-slate-600">Code development and implementation</p>
               </div>
+              {editingPhase !== "development" && (
+                <Button variant="outline" onClick={() => setEditingPhase("development")}>
+                  Edit
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {editingPhase === "development" ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Assigned Developer</Label>
+                      <Input
+                        value={formData.assignedDeveloper || ""}
+                        onChange={(e) => handleFieldChange("assignedDeveloper", e.target.value)}
+                        placeholder="Developer name"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Start Date</Label>
+                      <Input
+                        type="date"
+                        value={formData.startDate || ""}
+                        onChange={(e) => handleFieldChange("startDate", e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Target Completion Date</Label>
+                    <Input
+                      type="date"
+                      value={formData.targetCompletionDate || ""}
+                      onChange={(e) => handleFieldChange("targetCompletionDate", e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Development Notes</Label>
+                    <Textarea
+                      value={formData.developmentNotes || ""}
+                      onChange={(e) => handleFieldChange("developmentNotes", e.target.value)}
+                      rows={4}
+                      placeholder="Development progress notes, technical decisions, blockers..."
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button onClick={() => handleSave("development")}>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Development
+                    </Button>
+                    <Button variant="outline" onClick={() => setEditingPhase(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><strong>Assigned Developer:</strong> {request.assignedDeveloper || "Not assigned"}</div>
+                    <div><strong>Start Date:</strong> {request.startDate ? new Date(request.startDate).toLocaleDateString() : "Not set"}</div>
+                    <div><strong>Target Completion:</strong> {request.targetCompletionDate ? new Date(request.targetCompletionDate).toLocaleDateString() : "Not set"}</div>
+                  </div>
+                  <div>
+                    <strong>Development Notes:</strong>
+                    <p className="mt-1 text-slate-700">{request.developmentNotes || "No notes provided"}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
+        {/* Phase 5: Testing */}
         <TabsContent value="testing">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <CheckCircle className="w-5 h-5" />
-                <span>Testing Phase</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-slate-600">
-                <CheckCircle className="w-12 h-12 mx-auto mb-4 text-slate-400" />
-                <p>Testing phase tracking can be configured here</p>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center space-x-2">
+                  <CheckCircle className="w-5 h-5" />
+                  <span>Testing Phase</span>
+                </CardTitle>
+                <p className="text-sm text-slate-600">Quality assurance and testing</p>
               </div>
+              {editingPhase !== "testing" && (
+                <Button variant="outline" onClick={() => setEditingPhase("testing")}>
+                  Edit
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {editingPhase === "testing" ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Test Case Reference</Label>
+                      <Input
+                        value={formData.testCaseReference || ""}
+                        onChange={(e) => handleFieldChange("testCaseReference", e.target.value)}
+                        placeholder="Test case ID or reference"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Test Status</Label>
+                      <Select 
+                        value={formData.testStatus || ""} 
+                        onValueChange={(value) => handleFieldChange("testStatus", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select test status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Pass">Pass</SelectItem>
+                          <SelectItem value="Fail">Fail</SelectItem>
+                          <SelectItem value="Pending">Pending</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Test Start Date</Label>
+                      <Input
+                        type="date"
+                        value={formData.testStartDate || ""}
+                        onChange={(e) => handleFieldChange("testStartDate", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Test Completion Date</Label>
+                      <Input
+                        type="date"
+                        value={formData.testCompletionDate || ""}
+                        onChange={(e) => handleFieldChange("testCompletionDate", e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Bugs Reported</Label>
+                    <Textarea
+                      value={formData.bugsReported || ""}
+                      onChange={(e) => handleFieldChange("bugsReported", e.target.value)}
+                      rows={3}
+                      placeholder="List of bugs found during testing..."
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="reworkNeeded"
+                      checked={formData.reworkNeeded || false}
+                      onCheckedChange={(checked) => handleFieldChange("reworkNeeded", checked)}
+                    />
+                    <Label htmlFor="reworkNeeded">Rework Needed</Label>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button onClick={() => handleSave("testing")}>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Testing
+                    </Button>
+                    <Button variant="outline" onClick={() => setEditingPhase(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><strong>Test Case Reference:</strong> {request.testCaseReference || "Not specified"}</div>
+                    <div>
+                      <strong>Test Status:</strong> 
+                      <Badge className={`ml-2 ${
+                        request.testStatus === "Pass" ? "bg-green-500" :
+                        request.testStatus === "Fail" ? "bg-red-500" :
+                        "bg-yellow-500"
+                      } text-white`}>
+                        {request.testStatus || "Pending"}
+                      </Badge>
+                    </div>
+                    <div><strong>Test Start Date:</strong> {request.testStartDate ? new Date(request.testStartDate).toLocaleDateString() : "Not set"}</div>
+                    <div><strong>Test Completion:</strong> {request.testCompletionDate ? new Date(request.testCompletionDate).toLocaleDateString() : "Not set"}</div>
+                    <div><strong>Rework Needed:</strong> {request.reworkNeeded ? "Yes" : "No"}</div>
+                  </div>
+                  <div>
+                    <strong>Bugs Reported:</strong>
+                    <p className="mt-1 text-slate-700">{request.bugsReported || "No bugs reported"}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
+        {/* Phase 6: UAT */}
         <TabsContent value="uat">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Calendar className="w-5 h-5" />
-                <span>User Acceptance Testing</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-slate-600">
-                <Calendar className="w-12 h-12 mx-auto mb-4 text-slate-400" />
-                <p>UAT tracking details can be configured here</p>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center space-x-2">
+                  <Calendar className="w-5 h-5" />
+                  <span>User Acceptance Testing</span>
+                </CardTitle>
+                <p className="text-sm text-slate-600">Business user validation and acceptance</p>
               </div>
+              {editingPhase !== "uat" && (
+                <Button variant="outline" onClick={() => setEditingPhase("uat")}>
+                  Edit
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {editingPhase === "uat" ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>UAT Status</Label>
+                      <Select 
+                        value={formData.uatStatus || ""} 
+                        onValueChange={(value) => handleFieldChange("uatStatus", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select UAT status" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Accepted">Accepted</SelectItem>
+                          <SelectItem value="Rejected">Rejected</SelectItem>
+                          <SelectItem value="Changes Required">Changes Required</SelectItem>
+                          <SelectItem value="Pending">Pending</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>UAT Completion Date</Label>
+                      <Input
+                        type="date"
+                        value={formData.uatCompletionDate || ""}
+                        onChange={(e) => handleFieldChange("uatCompletionDate", e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>UAT Feedback</Label>
+                    <Textarea
+                      value={formData.uatFeedback || ""}
+                      onChange={(e) => handleFieldChange("uatFeedback", e.target.value)}
+                      rows={4}
+                      placeholder="Business user feedback and comments..."
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button onClick={() => handleSave("uat")}>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save UAT
+                    </Button>
+                    <Button variant="outline" onClick={() => setEditingPhase(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <strong>UAT Status:</strong> 
+                      <Badge className={`ml-2 ${
+                        request.uatStatus === "Accepted" ? "bg-green-500" :
+                        request.uatStatus === "Rejected" ? "bg-red-500" :
+                        request.uatStatus === "Changes Required" ? "bg-yellow-500" :
+                        "bg-gray-500"
+                      } text-white`}>
+                        {request.uatStatus || "Pending"}
+                      </Badge>
+                    </div>
+                    <div><strong>UAT Completion Date:</strong> {request.uatCompletionDate ? new Date(request.uatCompletionDate).toLocaleDateString() : "Not set"}</div>
+                  </div>
+                  <div>
+                    <strong>UAT Feedback:</strong>
+                    <p className="mt-1 text-slate-700">{request.uatFeedback || "No feedback provided"}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
+        {/* Phase 7: Deployment */}
         <TabsContent value="deployment">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <Zap className="w-5 h-5" />
-                <span>Deployment</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-slate-600">
-                <Zap className="w-12 h-12 mx-auto mb-4 text-slate-400" />
-                <p>Deployment tracking can be configured here</p>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center space-x-2">
+                  <Zap className="w-5 h-5" />
+                  <span>Deployment</span>
+                </CardTitle>
+                <p className="text-sm text-slate-600">Production deployment and release</p>
               </div>
+              {editingPhase !== "deployment" && (
+                <Button variant="outline" onClick={() => setEditingPhase("deployment")}>
+                  Edit
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {editingPhase === "deployment" ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Deployment Date</Label>
+                      <Input
+                        type="date"
+                        value={formData.deploymentDate || ""}
+                        onChange={(e) => handleFieldChange("deploymentDate", e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Deployed By</Label>
+                      <Input
+                        value={formData.deployedBy || ""}
+                        onChange={(e) => handleFieldChange("deployedBy", e.target.value)}
+                        placeholder="DevOps engineer or admin name"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Deployment Type</Label>
+                      <Select 
+                        value={formData.deploymentType || ""} 
+                        onValueChange={(value) => handleFieldChange("deploymentType", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select deployment type" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Hotfix">Hotfix</SelectItem>
+                          <SelectItem value="Minor Release">Minor Release</SelectItem>
+                          <SelectItem value="Major Release">Major Release</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Environment</Label>
+                      <Select 
+                        value={formData.environment || ""} 
+                        onValueChange={(value) => handleFieldChange("environment", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select environment" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Dev">Dev</SelectItem>
+                          <SelectItem value="UAT">UAT</SelectItem>
+                          <SelectItem value="Prod">Prod</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="rollbackPlan"
+                      checked={formData.rollbackPlan || false}
+                      onCheckedChange={(checked) => handleFieldChange("rollbackPlan", checked)}
+                    />
+                    <Label htmlFor="rollbackPlan">Rollback Plan Documented</Label>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button onClick={() => handleSave("deployment")}>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Deployment
+                    </Button>
+                    <Button variant="outline" onClick={() => setEditingPhase(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div><strong>Deployment Date:</strong> {request.deploymentDate ? new Date(request.deploymentDate).toLocaleDateString() : "Not deployed"}</div>
+                    <div><strong>Deployed By:</strong> {request.deployedBy || "Not specified"}</div>
+                    <div><strong>Deployment Type:</strong> {request.deploymentType || "Not specified"}</div>
+                    <div><strong>Environment:</strong> {request.environment || "Not specified"}</div>
+                    <div><strong>Rollback Plan:</strong> {request.rollbackPlan ? "Documented" : "Not documented"}</div>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
 
+        {/* Phase 8: Post-Deployment */}
         <TabsContent value="completed">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <CheckCircle className="w-5 h-5" />
-                <span>Post-Deployment Review</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-8 text-slate-600">
-                <CheckCircle className="w-12 h-12 mx-auto mb-4 text-slate-400" />
-                <p>Post-deployment review can be configured here</p>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center space-x-2">
+                  <CheckCircle className="w-5 h-5" />
+                  <span>Post-Deployment Review</span>
+                </CardTitle>
+                <p className="text-sm text-slate-600">Final review and project closure</p>
               </div>
+              {editingPhase !== "completed" && (
+                <Button variant="outline" onClick={() => setEditingPhase("completed")}>
+                  Edit
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {editingPhase === "completed" ? (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Outcome</Label>
+                      <Select 
+                        value={formData.outcome || ""} 
+                        onValueChange={(value) => handleFieldChange("outcome", value)}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select outcome" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Successful">Successful</SelectItem>
+                          <SelectItem value="Issues Found">Issues Found</SelectItem>
+                          <SelectItem value="Pending">Pending</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Close Date</Label>
+                      <Input
+                        type="date"
+                        value={formData.closeDate || ""}
+                        onChange={(e) => handleFieldChange("closeDate", e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Final Status</Label>
+                    <Select 
+                      value={formData.finalStatus || ""} 
+                      onValueChange={(value) => handleFieldChange("finalStatus", value)}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select final status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Closed">Closed</SelectItem>
+                        <SelectItem value="Pending Rework">Pending Rework</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Issues (if any)</Label>
+                    <Textarea
+                      value={formData.issues || ""}
+                      onChange={(e) => handleFieldChange("issues", e.target.value)}
+                      rows={3}
+                      placeholder="Post-deployment issues found..."
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Lessons Learned</Label>
+                    <Textarea
+                      value={formData.lessonsLearned || ""}
+                      onChange={(e) => handleFieldChange("lessonsLearned", e.target.value)}
+                      rows={3}
+                      placeholder="Key learnings from this project..."
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button onClick={() => handleSave("completed")}>
+                      <Save className="w-4 h-4 mr-2" />
+                      Save Review
+                    </Button>
+                    <Button variant="outline" onClick={() => setEditingPhase(null)}>
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <strong>Outcome:</strong> 
+                      <Badge className={`ml-2 ${
+                        request.outcome === "Successful" ? "bg-green-500" :
+                        request.outcome === "Issues Found" ? "bg-red-500" :
+                        "bg-yellow-500"
+                      } text-white`}>
+                        {request.outcome || "Pending"}
+                      </Badge>
+                    </div>
+                    <div><strong>Close Date:</strong> {request.closeDate ? new Date(request.closeDate).toLocaleDateString() : "Not closed"}</div>
+                    <div>
+                      <strong>Final Status:</strong> 
+                      <Badge className={`ml-2 ${
+                        request.finalStatus === "Closed" ? "bg-green-500" : "bg-yellow-500"
+                      } text-white`}>
+                        {request.finalStatus || "Open"}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div>
+                    <strong>Issues:</strong>
+                    <p className="mt-1 text-slate-700">{request.issues || "No issues reported"}</p>
+                  </div>
+                  <div>
+                    <strong>Lessons Learned:</strong>
+                    <p className="mt-1 text-slate-700">{request.lessonsLearned || "No lessons documented"}</p>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
