@@ -1,8 +1,8 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DevelopmentRequest } from "../pages/Index";
 import { 
   Calendar,
@@ -12,20 +12,41 @@ import {
   AlertTriangle,
   BarChart3
 } from "lucide-react";
+import { useState } from "react";
 
 interface MISDashboardProps {
   requests: DevelopmentRequest[];
 }
 
 export const MISDashboard = ({ requests }: MISDashboardProps) => {
-  const getLastMonthData = () => {
+  const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
-    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+    return `${now.getFullYear()}-${String(now.getMonth()).padStart(2, '0')}`;
+  });
+
+  const getMonthOptions = () => {
+    const months = [];
+    const now = new Date();
+    
+    // Generate last 12 months
+    for (let i = 0; i < 12; i++) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const value = `${date.getFullYear()}-${String(date.getMonth()).padStart(2, '0')}`;
+      const label = date.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+      months.push({ value, label });
+    }
+    
+    return months;
+  };
+
+  const getSelectedMonthData = () => {
+    const [year, month] = selectedMonth.split('-').map(Number);
+    const startDate = new Date(year, month, 1);
+    const endDate = new Date(year, month + 1, 0); // Last day of the month
 
     return requests.filter(req => {
       const reqDate = new Date(req.requestDate);
-      return reqDate >= lastMonth && reqDate < currentMonth;
+      return reqDate >= startDate && reqDate <= endDate;
     });
   };
 
@@ -45,7 +66,7 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
     requests.forEach(req => {
       const projectActivities = [];
 
-      // Check each phase for activities in the last month
+      // Check each phase for activities in the selected month
       const phases = [
         { id: "requirement-gathering", label: "Requirement Gathering", date: req.requestDate },
         { id: "analysis", label: "Analysis", date: req.requestDate },
@@ -58,7 +79,7 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
       ];
 
       phases.forEach(phase => {
-        if (phase.date && isLastMonth(phase.date)) {
+        if (phase.date && isSelectedMonth(phase.date)) {
           projectActivities.push({
             phase: phase.label,
             action: getPhaseAction(phase.id, req),
@@ -81,12 +102,10 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
     return activities;
   };
 
-  const isLastMonth = (dateString: string) => {
+  const isSelectedMonth = (dateString: string) => {
     const date = new Date(dateString);
-    const now = new Date();
-    const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    return date >= lastMonth && date < currentMonth;
+    const [year, month] = selectedMonth.split('-').map(Number);
+    return date.getFullYear() === year && date.getMonth() === month;
   };
 
   const getPhaseAction = (phaseId: string, req: DevelopmentRequest) => {
@@ -114,41 +133,58 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
   };
 
   const getMonthlyStats = () => {
-    const lastMonthRequests = getLastMonthData();
+    const selectedMonthRequests = getSelectedMonthData();
     const stats = {
-      totalRequests: lastMonthRequests.length,
-      completedRequests: lastMonthRequests.filter(r => r.currentStage === "completed").length,
-      approvedRequests: lastMonthRequests.filter(r => r.approvalStatus === "Approved").length,
-      inDevelopment: lastMonthRequests.filter(r => r.currentStage === "development").length,
-      inTesting: lastMonthRequests.filter(r => ["testing", "uat"].includes(r.currentStage)).length,
-      deployed: lastMonthRequests.filter(r => r.deploymentDate).length
+      totalRequests: selectedMonthRequests.length,
+      completedRequests: selectedMonthRequests.filter(r => r.currentStage === "completed").length,
+      approvedRequests: selectedMonthRequests.filter(r => r.approvalStatus === "Approved").length,
+      inDevelopment: selectedMonthRequests.filter(r => r.currentStage === "development").length,
+      inTesting: selectedMonthRequests.filter(r => ["testing", "uat"].includes(r.currentStage)).length,
+      deployed: selectedMonthRequests.filter(r => r.deploymentDate).length
     };
     return stats;
   };
 
   const getDepartmentBreakdown = () => {
-    const lastMonthRequests = getLastMonthData();
+    const selectedMonthRequests = getSelectedMonthData();
     const breakdown: { [key: string]: number } = {};
     
-    lastMonthRequests.forEach(req => {
+    selectedMonthRequests.forEach(req => {
       breakdown[req.department] = (breakdown[req.department] || 0) + 1;
     });
     
     return Object.entries(breakdown).map(([dept, count]) => ({ department: dept, count }));
   };
 
-  const lastMonthRequests = getLastMonthData();
+  const selectedMonthRequests = getSelectedMonthData();
   const monthlyStats = getMonthlyStats();
   const departmentBreakdown = getDepartmentBreakdown();
   const projectActivities = getProjectActivities();
-  const now = new Date();
-  const lastMonthName = new Date(now.getFullYear(), now.getMonth() - 1, 1).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const selectedMonthLabel = getMonthOptions().find(m => m.value === selectedMonth)?.label || 'Selected Month';
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-2 mb-6">
-        <BarChart3 className="w-6 h-6 text-blue-600" />
-        <h2 className="text-2xl font-bold text-slate-800">MIS Dashboard - {lastMonthName}</h2>
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-2">
+          <BarChart3 className="w-6 h-6 text-blue-600" />
+          <h2 className="text-2xl font-bold text-slate-800">MIS Dashboard</h2>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <Calendar className="w-4 h-4 text-slate-600" />
+          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+            <SelectTrigger className="w-[200px]">
+              <SelectValue placeholder="Select month" />
+            </SelectTrigger>
+            <SelectContent>
+              {getMonthOptions().map((month) => (
+                <SelectItem key={month.value} value={month.value}>
+                  {month.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Monthly Statistics */}
@@ -212,7 +248,7 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
         {/* Department Breakdown */}
         <Card>
           <CardHeader>
-            <CardTitle>Department-wise Requests ({lastMonthName})</CardTitle>
+            <CardTitle>Department-wise Requests ({selectedMonthLabel})</CardTitle>
           </CardHeader>
           <CardContent>
             {departmentBreakdown.length > 0 ? (
@@ -232,16 +268,16 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
               </div>
             ) : (
               <div className="text-center py-4 text-slate-500">
-                No requests in {lastMonthName}
+                No requests in {selectedMonthLabel}
               </div>
             )}
           </CardContent>
         </Card>
 
-        {/* Recent Activities Summary */}
+        {/* Key Metrics */}
         <Card>
           <CardHeader>
-            <CardTitle>Key Metrics ({lastMonthName})</CardTitle>
+            <CardTitle>Key Metrics ({selectedMonthLabel})</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -292,7 +328,7 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
       {/* Project Activities Detail */}
       <Card>
         <CardHeader>
-          <CardTitle>Project Activities - {lastMonthName}</CardTitle>
+          <CardTitle>Project Activities - {selectedMonthLabel}</CardTitle>
         </CardHeader>
         <CardContent>
           {projectActivities.length > 0 ? (
@@ -336,7 +372,7 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
             </Table>
           ) : (
             <div className="text-center py-8 text-slate-500">
-              No project activities recorded for {lastMonthName}
+              No project activities recorded for {selectedMonthLabel}
             </div>
           )}
         </CardContent>
