@@ -20,9 +20,10 @@ import {
 
 interface DashboardOverviewProps {
   requests: DevelopmentRequest[];
+  onNavigateToRequests?: () => void;
 }
 
-export const DashboardOverview = ({ requests }: DashboardOverviewProps) => {
+export const DashboardOverview = ({ requests, onNavigateToRequests }: DashboardOverviewProps) => {
   const getStageStats = () => {
     const stages = {
       "requirement-gathering": 0,
@@ -252,7 +253,7 @@ export const DashboardOverview = ({ requests }: DashboardOverviewProps) => {
       </TabsContent>
 
       <TabsContent value="mis">
-        <MISDashboard requests={requests} />
+        <MISDashboard requests={requests} onNavigateToRequests={onNavigateToRequests} />
       </TabsContent>
     </Tabs>
   );

@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -17,14 +16,21 @@ import { useState } from "react";
 
 interface MISDashboardProps {
   requests: DevelopmentRequest[];
+  onNavigateToRequests?: () => void;
 }
 
-export const MISDashboard = ({ requests }: MISDashboardProps) => {
+export const MISDashboard = ({ requests, onNavigateToRequests }: MISDashboardProps) => {
   const [selectedMonth, setSelectedMonth] = useState(() => {
     const now = new Date();
     const currentYear = now.getFullYear();
-    // Default to April of current year
-    return `${currentYear}-03`; // March is month index 3 (April is month 3 in 0-based indexing)
+    const currentMonth = now.getMonth();
+    
+    // If current month is April or later, use current year, otherwise use previous year
+    const year = currentMonth >= 3 ? currentYear : currentYear - 1;
+    // Default to current month if it's between April-March cycle, otherwise April
+    const month = currentMonth >= 3 ? currentMonth : 3;
+    
+    return `${year}-${String(month).padStart(2, '0')}`;
   });
 
   const getMonthOptions = () => {
@@ -170,6 +176,12 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
   const projectActivities = getProjectActivities();
   const selectedMonthLabel = getMonthOptions().find(m => m.value === selectedMonth)?.label || 'Selected Month';
 
+  const handleCardClick = () => {
+    if (onNavigateToRequests) {
+      onNavigateToRequests();
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-6">
@@ -197,7 +209,10 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
 
       {/* Monthly Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+        <Card 
+          className="bg-gradient-to-r from-blue-500 to-blue-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={handleCardClick}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Total Requests</CardTitle>
           </CardHeader>
@@ -206,7 +221,10 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+        <Card 
+          className="bg-gradient-to-r from-green-500 to-green-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={handleCardClick}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Completed</CardTitle>
           </CardHeader>
@@ -215,7 +233,10 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+        <Card 
+          className="bg-gradient-to-r from-purple-500 to-purple-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={handleCardClick}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Approved</CardTitle>
           </CardHeader>
@@ -224,7 +245,10 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+        <Card 
+          className="bg-gradient-to-r from-orange-500 to-orange-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={handleCardClick}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">In Development</CardTitle>
           </CardHeader>
@@ -233,7 +257,10 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white">
+        <Card 
+          className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={handleCardClick}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">In Testing</CardTitle>
           </CardHeader>
@@ -242,7 +269,10 @@ export const MISDashboard = ({ requests }: MISDashboardProps) => {
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-r from-teal-500 to-teal-600 text-white">
+        <Card 
+          className="bg-gradient-to-r from-teal-500 to-teal-600 text-white cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={handleCardClick}
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium">Deployed</CardTitle>
           </CardHeader>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { DashboardOverview } from "../components/DashboardOverview";
 import { RequestList } from "../components/RequestList";
@@ -57,6 +56,7 @@ export interface DevelopmentRequest {
 const Index = () => {
   const [activeView, setActiveView] = useState<"dashboard" | "requests" | "new-request">("dashboard");
   const [selectedRequest, setSelectedRequest] = useState<DevelopmentRequest | null>(null);
+  
   const [requests, setRequests] = useState<DevelopmentRequest[]>([
     {
       id: "REQ-001",
@@ -268,6 +268,10 @@ const Index = () => {
     setSelectedRequest(updatedRequest);
   };
 
+  const handleNavigateToRequests = () => {
+    setActiveView("requests");
+  };
+
   if (selectedRequest) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50">
@@ -305,7 +309,7 @@ const Index = () => {
                 New Request
               </Button>
             </div>
-            <DashboardOverview requests={requests} />
+            <DashboardOverview requests={requests} onNavigateToRequests={handleNavigateToRequests} />
           </>
         )}
 
