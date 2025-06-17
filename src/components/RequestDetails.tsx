@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { DevelopmentRequest } from "../pages/Index";
 import { BugTaskTracker } from "./BugTaskTracker";
 import { toast } from "sonner";
@@ -20,7 +21,10 @@ import {
   Calendar, 
   Zap,
   ArrowLeft,
-  Save
+  Save,
+  Plus,
+  Edit,
+  Trash2
 } from "lucide-react";
 import { DocumentAttachment } from "./DocumentAttachment";
 
@@ -32,6 +36,17 @@ interface Document {
   uploadedBy: string;
   uploadedDate: string;
   url?: string;
+}
+
+interface RequirementTask {
+  id: string;
+  title: string;
+  description: string;
+  assignedTo: string;
+  status: "Not Started" | "In Progress" | "Completed";
+  priority: "Low" | "Medium" | "High";
+  dueDate: string;
+  createdDate: string;
 }
 
 interface RequestDetailsProps {
@@ -51,6 +66,17 @@ export const RequestDetails = ({ request, onUpdate, onBack }: RequestDetailsProp
 
   // Document state
   const [requirementDocuments, setRequirementDocuments] = useState<Document[]>([]);
+
+  // Requirement task tracking state
+  const [requirementTasks, setRequirementTasks] = useState<RequirementTask[]>([]);
+  const [isAddingTask, setIsAddingTask] = useState(false);
+  const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
+  const [taskFormData, setTaskFormData] = useState<Partial<RequirementTask>>({
+    status: "Not Started",
+    priority: "Medium",
+    createdDate: new Date().toISOString().split('T')[0],
+    dueDate: ""
+  });
 
   const phases = [
     { id: "requirement-gathering", label: "Requirement Gathering", icon: FileText },
@@ -85,6 +111,86 @@ export const RequestDetails = ({ request, onUpdate, onBack }: RequestDetailsProp
       Low: "bg-green-500 text-white"
     };
     return colors[priority as keyof typeof colors] || "bg-gray-500 text-white";
+  };
+
+  // Task management functions
+  const handleAddTask = () => {
+    if (!taskFormData.title || !taskFormData.description || !taskFormData.assignedTo) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    const newTask: RequirementTask = {
+      id: `req-task-${Date.now()}`,
+      title: taskFormData.title,
+      description: taskFormData.description,
+      assignedTo: taskFormData.assignedTo,
+      status: taskFormData.status as "Not Started" | "In Progress" | "Completed",
+      priority: taskFormData.priority as "Low" | "Medium" | "High",
+      dueDate: taskFormData.dueDate || "",
+      createdDate: taskFormData.createdDate || new Date().toISOString().split('T')[0]
+    };
+
+    setRequirementTasks(prev => [...prev, newTask]);
+    setTaskFormData({
+      status: "Not Started",
+      priority: "Medium",
+      createdDate: new Date().toISOString().split('T')[0],
+      dueDate: ""
+    });
+    setIsAddingTask(false);
+    toast.success("Task added successfully");
+  };
+
+  const handleEditTask = (task: RequirementTask) => {
+    setTaskFormData(task);
+    setEditingTaskId(task.id);
+    setIsAddingTask(true);
+  };
+
+  const handleUpdateTask = () => {
+    if (!taskFormData.title || !taskFormData.description || !taskFormData.assignedTo) {
+      toast.error("Please fill in all required fields");
+      return;
+    }
+
+    const updatedTasks = requirementTasks.map(task => 
+      task.id === editingTaskId ? { ...task, ...taskFormData } as RequirementTask : task
+    );
+    setRequirementTasks(updatedTasks);
+    setTaskFormData({
+      status: "Not Started",
+      priority: "Medium",
+      createdDate: new Date().toISOString().split('T')[0],
+      dueDate: ""
+    });
+    setIsAddingTask(false);
+    setEditingTaskId(null);
+    toast.success("Task updated successfully");
+  };
+
+  const handleDeleteTask = (id: string) => {
+    const updatedTasks = requirementTasks.filter(task => task.id !== id);
+    setRequirementTasks(updatedTasks);
+    toast.success("Task deleted successfully");
+  };
+
+  const getTaskStatusColor = (status: string) => {
+    const colors = {
+      "Not Started": "bg-gray-500",
+      "In Progress": "bg-blue-500",
+      "Completed": "bg-green-500"
+    };
+    return colors[status as keyof typeof colors] || "bg-gray-500";
+  };
+
+  const getTaskPriorityColor = (priority: string) => {
+    const colors = {
+      Low: "bg-green-500",
+      Medium: "bg-yellow-500",
+      High: "bg-red-500"
+    };
+    return colors[priority as keyof typeof colors] || "bg-gray-500";
   };
 
   return (
@@ -160,7 +266,7 @@ export const RequestDetails = ({ request, onUpdate, onBack }: RequestDetailsProp
           ))}
         </TabsList>
 
-        {/* Phase 1: Requirement Gathering - Enhanced with Document Attachment */}
+        {/* Phase 1: Requirement Gathering - Enhanced with Task Tracking */}
         <TabsContent value="requirement-gathering">
           <div className="space-y-6">
             <Card>
@@ -240,6 +346,167 @@ export const RequestDetails = ({ request, onUpdate, onBack }: RequestDetailsProp
                       <strong>Business Justification:</strong>
                       <p className="mt-1 text-slate-700">{request.businessJustification}</p>
                     </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Task Tracker for Requirement Gathering */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle>Requirement Gathering Tasks</CardTitle>
+                <Button onClick={() => setIsAddingTask(true)} size="sm">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Task
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {isAddingTask && (
+                  <Card className="bg-slate-50">
+                    <CardContent className="p-4 space-y-4">
+                      <div className="space-y-2">
+                        <Label>Task Title *</Label>
+                        <Input
+                          value={taskFormData.title || ""}
+                          onChange={(e) => setTaskFormData(prev => ({ ...prev, title: e.target.value }))}
+                          placeholder="Task title"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Description *</Label>
+                        <Textarea
+                          value={taskFormData.description || ""}
+                          onChange={(e) => setTaskFormData(prev => ({ ...prev, description: e.target.value }))}
+                          rows={3}
+                          placeholder="Task description"
+                        />
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label>Assigned To *</Label>
+                          <Input
+                            value={taskFormData.assignedTo || ""}
+                            onChange={(e) => setTaskFormData(prev => ({ ...prev, assignedTo: e.target.value }))}
+                            placeholder="Assignee name"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Priority</Label>
+                          <Select 
+                            value={taskFormData.priority} 
+                            onValueChange={(value) => setTaskFormData(prev => ({ ...prev, priority: value as "Low" | "Medium" | "High" }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Low">Low</SelectItem>
+                              <SelectItem value="Medium">Medium</SelectItem>
+                              <SelectItem value="High">High</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-2">
+                          <Label>Status</Label>
+                          <Select 
+                            value={taskFormData.status} 
+                            onValueChange={(value) => setTaskFormData(prev => ({ ...prev, status: value as "Not Started" | "In Progress" | "Completed" }))}
+                          >
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="Not Started">Not Started</SelectItem>
+                              <SelectItem value="In Progress">In Progress</SelectItem>
+                              <SelectItem value="Completed">Completed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Due Date</Label>
+                        <Input
+                          type="date"
+                          value={taskFormData.dueDate || ""}
+                          onChange={(e) => setTaskFormData(prev => ({ ...prev, dueDate: e.target.value }))}
+                        />
+                      </div>
+                      <div className="flex space-x-2">
+                        <Button onClick={editingTaskId ? handleUpdateTask : handleAddTask}>
+                          {editingTaskId ? "Update" : "Add"} Task
+                        </Button>
+                        <Button 
+                          variant="outline" 
+                          onClick={() => {
+                            setIsAddingTask(false);
+                            setEditingTaskId(null);
+                            setTaskFormData({
+                              status: "Not Started",
+                              priority: "Medium",
+                              createdDate: new Date().toISOString().split('T')[0],
+                              dueDate: ""
+                            });
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {requirementTasks.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Task</TableHead>
+                        <TableHead>Assigned To</TableHead>
+                        <TableHead>Priority</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Due Date</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {requirementTasks.map((task) => (
+                        <TableRow key={task.id}>
+                          <TableCell>
+                            <div>
+                              <div className="font-medium">{task.title}</div>
+                              <div className="text-sm text-slate-500">{task.description}</div>
+                            </div>
+                          </TableCell>
+                          <TableCell>{task.assignedTo}</TableCell>
+                          <TableCell>
+                            <Badge className={`${getTaskPriorityColor(task.priority)} text-white`}>
+                              {task.priority}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            <Badge className={`${getTaskStatusColor(task.status)} text-white`}>
+                              {task.status}
+                            </Badge>
+                          </TableCell>
+                          <TableCell>
+                            {task.dueDate ? new Date(task.dueDate).toLocaleDateString() : "No due date"}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Button size="sm" variant="outline" onClick={() => handleEditTask(task)}>
+                                <Edit className="w-3 h-3" />
+                              </Button>
+                              <Button size="sm" variant="outline" onClick={() => handleDeleteTask(task.id)}>
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-8 text-slate-500">
+                    No requirement gathering tasks added yet.
                   </div>
                 )}
               </CardContent>
