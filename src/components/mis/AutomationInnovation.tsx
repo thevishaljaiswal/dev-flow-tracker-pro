@@ -1,29 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Zap, Clock, DollarSign, Lightbulb } from "lucide-react";
+import { useMISData } from "./MISDataManager";
 
 export const AutomationInnovation = () => {
-  // Mock data - replace with real data
-  const automationData = {
-    initiatives: [
-      { name: "Automated Invoice Processing", type: "RPA", status: "Live", timeSaved: "40 hours/week" },
-      { name: "IT Ticket Auto-Assignment", type: "Workflow", status: "Testing", timeSaved: "15 hours/week" },
-      { name: "Employee Onboarding Portal", type: "Self-service", status: "Live", timeSaved: "25 hours/week" }
-    ],
-    savings: {
-      totalTimeSaved: 320, // hours per month
-      costSaved: 24000, // dollars per month
-      processes: 12
-    },
-    aiMl: [
-      { name: "Predictive Maintenance", status: "Pilot", impact: "20% reduction in downtime" },
-      { name: "Customer Support Chatbot", status: "Live", impact: "30% faster response time" }
-    ],
-    suggestions: [
-      { idea: "Automated report generation for HR", priority: "High", estimatedSavings: "10 hours/week" },
-      { idea: "Smart inventory management", priority: "Medium", estimatedSavings: "15 hours/week" }
-    ]
-  };
+  const { getCurrentData } = useMISData();
+  const automationData = getCurrentData().automation;
 
   return (
     <Card>

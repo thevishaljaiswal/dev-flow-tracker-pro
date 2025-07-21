@@ -1,29 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Calendar, Settings, BookOpen, ShoppingCart } from "lucide-react";
+import { useMISData } from "./MISDataManager";
 
 export const UpcomingPlansRoadmap = () => {
-  // Mock data - replace with real data
-  const roadmapData = {
-    upgrades: [
-      { name: "Database Server Upgrade", date: "2024-02-15", impact: "2 hours downtime", type: "Infrastructure" },
-      { name: "ERP System Update", date: "2024-02-20", impact: "4 hours downtime", type: "Application" },
-      { name: "Security Patch Rollout", date: "2024-02-25", impact: "30 minutes downtime", type: "Security" }
-    ],
-    maintenance: [
-      { system: "Core Banking System", date: "2024-02-10", duration: "6 hours", window: "Saturday 10 PM - 4 AM" },
-      { system: "Email Servers", date: "2024-02-17", duration: "2 hours", window: "Sunday 2 AM - 4 AM" }
-    ],
-    training: [
-      { program: "Cybersecurity Awareness", date: "2024-02-12", audience: "All Staff", trainer: "External Vendor" },
-      { program: "New CRM Features", date: "2024-02-19", audience: "Sales Team", trainer: "Internal IT" },
-      { program: "IT Security Audit", date: "2024-02-26", audience: "IT Department", trainer: "Compliance Team" }
-    ],
-    procurement: [
-      { item: "Network Security Appliances", timeline: "Q1 2024", budget: "$150,000", status: "RFP Stage" },
-      { item: "Employee Laptops Refresh", timeline: "Q2 2024", budget: "$200,000", status: "Planning" }
-    ]
-  };
+  const { getCurrentData } = useMISData();
+  const roadmapData = getCurrentData().roadmap;
 
   const getTypeColor = (type: string) => {
     switch (type.toLowerCase()) {

@@ -2,27 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Server, Wifi, AlertTriangle, CheckCircle } from "lucide-react";
+import { useMISData } from "./MISDataManager";
 
 export const ITOperationsSummary = () => {
-  // Mock data - replace with real data
-  const systemData = {
-    applications: {
-      erp: { uptime: 99.8, status: "operational" },
-      crm: { uptime: 99.5, status: "operational" },
-      portal: { uptime: 98.9, status: "maintenance" }
-    },
-    infrastructure: {
-      servers: { uptime: 99.9, status: "operational" },
-      network: { uptime: 99.7, status: "operational" },
-      vpn: { uptime: 99.2, status: "operational" }
-    },
-    tickets: {
-      total: 45,
-      resolved: 38,
-      pending: 7,
-      slaAdherence: 92
-    }
-  };
+  const { getCurrentData } = useMISData();
+  const systemData = getCurrentData().itOperations;
 
   return (
     <Card>

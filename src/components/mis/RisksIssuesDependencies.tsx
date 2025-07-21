@@ -1,53 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertTriangle, ExternalLink, FileCheck } from "lucide-react";
+import { useMISData } from "./MISDataManager";
 
 export const RisksIssuesDependencies = () => {
-  // Mock data - replace with real data
-  const riskData = {
-    majorRisks: [
-      { 
-        risk: "Legacy system compatibility issues", 
-        severity: "High", 
-        mitigation: "Gradual migration plan with fallback options",
-        owner: "IT Architecture Team"
-      },
-      { 
-        risk: "Data security vulnerabilities", 
-        severity: "Critical", 
-        mitigation: "Enhanced security protocols and regular audits",
-        owner: "Cybersecurity Team"
-      }
-    ],
-    dependencies: [
-      { 
-        item: "Cloud migration project", 
-        dependsOn: "Vendor contract finalization", 
-        status: "Waiting",
-        eta: "2024-02-15"
-      },
-      { 
-        item: "New payroll system", 
-        dependsOn: "HR policy approval", 
-        status: "In Progress",
-        eta: "2024-02-28"
-      }
-    ],
-    compliance: [
-      { 
-        area: "GDPR Data Protection", 
-        status: "Compliant", 
-        lastAudit: "2024-01-10",
-        nextReview: "2024-07-10"
-      },
-      { 
-        area: "SOX Financial Controls", 
-        status: "Gap Identified", 
-        lastAudit: "2024-01-15",
-        nextReview: "2024-03-15"
-      }
-    ]
-  };
+  const { getCurrentData } = useMISData();
+  const riskData = getCurrentData().risks;
 
   const getSeverityColor = (severity: string) => {
     switch (severity.toLowerCase()) {

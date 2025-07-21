@@ -2,30 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Users, BookOpen, MessageSquare } from "lucide-react";
+import { useMISData } from "./MISDataManager";
 
 export const SystemUsageAdoption = () => {
-  // Mock data - replace with real data
-  const usageData = {
-    applications: {
-      erp: { activeUsers: 450, totalUsers: 500, usage: 90 },
-      crm: { activeUsers: 280, totalUsers: 320, usage: 87.5 },
-      portal: { activeUsers: 180, totalUsers: 250, usage: 72 }
-    },
-    licenses: {
-      office365: { used: 480, available: 500, utilization: 96 },
-      adobe: { used: 25, available: 30, utilization: 83 },
-      project: { used: 15, available: 20, utilization: 75 }
-    },
-    training: {
-      conducted: 8,
-      planned: 12,
-      attendees: 145
-    },
-    feedback: [
-      { system: "ERP", issue: "Slow report generation", status: "In Progress" },
-      { system: "CRM", issue: "Mobile app sync issues", status: "Resolved" }
-    ]
-  };
+  const { getCurrentData } = useMISData();
+  const usageData = getCurrentData().systemUsage;
 
   return (
     <Card>

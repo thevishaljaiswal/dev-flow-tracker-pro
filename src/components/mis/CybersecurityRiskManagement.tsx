@@ -2,31 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Shield, AlertTriangle, CheckCircle, Database } from "lucide-react";
+import { useMISData } from "./MISDataManager";
 
 export const CybersecurityRiskManagement = () => {
-  // Mock data - replace with real data
-  const securityData = {
-    incidents: {
-      total: 2,
-      resolved: 2,
-      pending: 0
-    },
-    systems: {
-      antivirus: { status: "up-to-date", lastUpdate: "2024-01-20" },
-      firewall: { status: "active", lastUpdate: "2024-01-18" },
-      intrusion: { status: "active", lastUpdate: "2024-01-19" }
-    },
-    patches: {
-      os: { completion: 95, pending: 3 },
-      apps: { completion: 88, pending: 12 },
-      firmware: { completion: 92, pending: 5 }
-    },
-    backups: {
-      success: 28,
-      failure: 2,
-      successRate: 93
-    }
-  };
+  const { getCurrentData } = useMISData();
+  const securityData = getCurrentData().cybersecurity;
 
   return (
     <Card>

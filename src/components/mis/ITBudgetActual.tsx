@@ -2,24 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DollarSign, TrendingDown, TrendingUp, ShoppingCart } from "lucide-react";
+import { useMISData } from "./MISDataManager";
 
 export const ITBudgetActual = () => {
-  // Mock data - replace with real data
-  const budgetData = {
-    monthly: {
-      opex: { budget: 150000, actual: 142000, variance: -8000 },
-      capex: { budget: 200000, actual: 185000, variance: -15000 }
-    },
-    majorPurchases: [
-      { item: "Server Hardware Upgrade", amount: 75000, date: "2024-01-15", status: "Completed" },
-      { item: "Software Licenses", amount: 25000, date: "2024-01-20", status: "Pending" }
-    ],
-    forecast: {
-      nextMonth: 320000,
-      nextQuarter: 980000,
-      riskFactors: ["Potential hardware price increase", "Additional security software needed"]
-    }
-  };
+  const { getCurrentData } = useMISData();
+  const budgetData = getCurrentData().budget;
 
   const getVarianceColor = (variance: number) => {
     if (variance < 0) return "text-green-600"; // Under budget

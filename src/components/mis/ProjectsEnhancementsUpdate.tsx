@@ -2,26 +2,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { FolderOpen, TrendingUp } from "lucide-react";
+import { useMISData } from "./MISDataManager";
 
 export const ProjectsEnhancementsUpdate = () => {
-  // Mock data - replace with real data
-  const projectData = {
-    ongoing: [
-      { id: "P001", name: "ERP Upgrade", status: "green", progress: 75, department: "IT" },
-      { id: "P002", name: "CRM Integration", status: "amber", progress: 45, department: "Sales" },
-      { id: "P003", name: "Security Enhancement", status: "red", progress: 25, department: "IT" }
-    ],
-    newInitiatives: [
-      { name: "AI Chatbot Implementation", kickoff: "2024-02-01", department: "Customer Service" },
-      { name: "Mobile App Development", kickoff: "2024-02-15", department: "Marketing" }
-    ],
-    delays: [
-      { project: "CRM Integration", reason: "Vendor delays", mitigation: "Alternative vendor identified" }
-    ],
-    completed: [
-      { name: "Database Migration", impact: "40% performance improvement", completionDate: "2024-01-15" }
-    ]
-  };
+  const { getCurrentData } = useMISData();
+  const projectData = getCurrentData().projects;
 
   const getStatusColor = (status: string) => {
     switch (status) {
