@@ -41,15 +41,15 @@ export const ITBudgetActual = () => {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Budget:</span>
-                  <span>${budgetData.monthly.opex.budget.toLocaleString()}</span>
+                  <span>₹{budgetData.monthly.opex.budget.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Actual:</span>
-                  <span>${budgetData.monthly.opex.actual.toLocaleString()}</span>
+                  <span>₹{budgetData.monthly.opex.actual.toLocaleString()}</span>
                 </div>
                 <div className={`flex justify-between text-sm font-medium ${getVarianceColor(budgetData.monthly.opex.variance)}`}>
                   <span>Variance:</span>
-                  <span>${budgetData.monthly.opex.variance.toLocaleString()}</span>
+                  <span>₹{budgetData.monthly.opex.variance.toLocaleString()}</span>
                 </div>
                 <Progress 
                   value={(budgetData.monthly.opex.actual / budgetData.monthly.opex.budget) * 100} 
@@ -66,15 +66,15 @@ export const ITBudgetActual = () => {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Budget:</span>
-                  <span>${budgetData.monthly.capex.budget.toLocaleString()}</span>
+                  <span>₹{budgetData.monthly.capex.budget.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Actual:</span>
-                  <span>${budgetData.monthly.capex.actual.toLocaleString()}</span>
+                  <span>₹{budgetData.monthly.capex.actual.toLocaleString()}</span>
                 </div>
                 <div className={`flex justify-between text-sm font-medium ${getVarianceColor(budgetData.monthly.capex.variance)}`}>
                   <span>Variance:</span>
-                  <span>${budgetData.monthly.capex.variance.toLocaleString()}</span>
+                  <span>₹{budgetData.monthly.capex.variance.toLocaleString()}</span>
                 </div>
                 <Progress 
                   value={(budgetData.monthly.capex.actual / budgetData.monthly.capex.budget) * 100} 
@@ -96,7 +96,7 @@ export const ITBudgetActual = () => {
                   <div className="text-sm text-muted-foreground">{purchase.date}</div>
                 </div>
                 <div className="text-right">
-                  <div className="font-bold">${purchase.amount.toLocaleString()}</div>
+                  <div className="font-bold">₹{purchase.amount.toLocaleString()}</div>
                   <Badge variant={purchase.status === "Completed" ? "default" : "secondary"}>
                     {purchase.status}
                   </Badge>
@@ -111,11 +111,11 @@ export const ITBudgetActual = () => {
           <h4 className="font-semibold mb-3">Forecast</h4>
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="text-center p-3 bg-blue-50 rounded-lg">
-              <div className="text-xl font-bold text-blue-600">${budgetData.forecast.nextMonth.toLocaleString()}</div>
+              <div className="text-xl font-bold text-blue-600">₹{budgetData.forecast.nextMonth.toLocaleString()}</div>
               <div className="text-sm text-blue-600">Next Month</div>
             </div>
             <div className="text-center p-3 bg-purple-50 rounded-lg">
-              <div className="text-xl font-bold text-purple-600">${budgetData.forecast.nextQuarter.toLocaleString()}</div>
+              <div className="text-xl font-bold text-purple-600">₹{budgetData.forecast.nextQuarter.toLocaleString()}</div>
               <div className="text-sm text-purple-600">Next Quarter</div>
             </div>
           </div>

@@ -48,7 +48,7 @@ export const AutomationInnovation = () => {
             </div>
             <div className="text-center p-3 bg-blue-50 rounded-lg">
               <DollarSign className="w-6 h-6 mx-auto mb-2 text-blue-600" />
-              <div className="text-2xl font-bold text-blue-600">${automationData.savings.costSaved.toLocaleString()}</div>
+              <div className="text-2xl font-bold text-blue-600">₹{automationData.savings.costSaved.toLocaleString()}</div>
               <div className="text-sm text-blue-600">Saved/Month</div>
             </div>
             <div className="text-center p-3 bg-purple-50 rounded-lg">
